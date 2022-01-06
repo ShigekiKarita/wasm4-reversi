@@ -17,7 +17,7 @@ struct Agent {
         if (b.canUpdate(x, y, false)) {
           auto tmp = b;
           tmp.update(x, y, false);
-          const score = search(tmp, true, 5);
+          const score = search(tmp, true, 6);
           if (score > best.score) {
             best = Action(x, y, score);
           }
@@ -25,6 +25,15 @@ struct Agent {
       }
     }
     return best;
+  }
+
+  static int heuristic(bool isPlayerTurn, int x, int y) {
+    // corners
+    if ((x == 0 && y == 0) ||
+        (x == 0 && y == Board.length - 1) ||
+        (x == Board.length - 1 && y == 0) ||
+        (x == Board.length - 1 && y == Board.length - 1)) return isPlayerTurn ? 16 : -16;
+    return 0;
   }
 
   double search(Board b, bool isPlayerTurn, uint depth) const {
@@ -38,7 +47,8 @@ struct Agent {
     foreach (x; 0 .. b.length) {
       foreach (y; 0 .. b.length) {
         if (b.canUpdate(x, y, isPlayerTurn)) {
-          const score = search(b, !isPlayerTurn, depth - 1);
+          b.update(x, y, isPlayerTurn);
+          const score = search(b, !isPlayerTurn, depth - 1) + heuristic(isPlayerTurn, x, y);
           if (isPlayerTurn && alpha < score) alpha = score;
           if (!isPlayerTurn && beta > score) beta = score;
         }

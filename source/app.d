@@ -22,8 +22,10 @@ extern(C) void update() {
   if (isPlayerTurn) {
     isPlayerTurn = !board.mouse();
   } else {
-    auto action = agent.select(board);
-    board.update(action.x, action.y, false);
+    if (!board.pass(false)) {
+      auto action = agent.select(board);
+      board.update(action.x, action.y, false);
+    }
     isPlayerTurn = true;
   }
   board.draw();
@@ -31,7 +33,9 @@ extern(C) void update() {
   *w4.drawColors = 3;
   w4.text("Score:", margin, 0);
   w4.text(itos(board.score).ptr, 64, 0);
-  w4.text("Your are black", margin, w4.screenSize - margin);
+
+  w4.text(isPlayerTurn ? "Your turn (black)" : "CPU turn (white)",
+          margin, w4.screenSize - margin);
 }
 
 const(char)[] itos(int i) {
