@@ -2,6 +2,7 @@ module agent;
 
 import board : Board;
 import std.algorithm : min, max;
+import w4 = wasm4;
 
 struct Action {
   int x, y;
@@ -17,22 +18,23 @@ struct Agent {
         if (b.canUpdate(x, y, false)) {
           auto tmp = b;
           tmp.update(x, y, false);
-          const score = search(tmp, true, 6);
+          const score = search(tmp, true, 5);
           if (score > best.score) {
             best = Action(x, y, score);
           }
         }
       }
     }
+    w4.tracef("agent score: %f", best.score);
     return best;
   }
 
-  static int heuristic(bool isPlayerTurn, int x, int y) {
+  static int heuristic(int x, int y) {
     // corners
     if ((x == 0 && y == 0) ||
         (x == 0 && y == Board.length - 1) ||
         (x == Board.length - 1 && y == 0) ||
-        (x == Board.length - 1 && y == Board.length - 1)) return isPlayerTurn ? 16 : -16;
+        (x == Board.length - 1 && y == Board.length - 1)) return -100;
     return 0;
   }
 
@@ -48,7 +50,7 @@ struct Agent {
       foreach (y; 0 .. b.length) {
         if (b.canUpdate(x, y, isPlayerTurn)) {
           b.update(x, y, isPlayerTurn);
-          const score = search(b, !isPlayerTurn, depth - 1) + heuristic(isPlayerTurn, x, y);
+          const score = search(b, !isPlayerTurn, depth - 1);
           if (isPlayerTurn && alpha < score) alpha = score;
           if (!isPlayerTurn && beta > score) beta = score;
         }

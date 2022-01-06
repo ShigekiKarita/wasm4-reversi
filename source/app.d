@@ -19,14 +19,16 @@ extern(C) void start() {
 }
 
 extern(C) void update() {
-  if (isPlayerTurn) {
-    isPlayerTurn = !board.mouse();
-  } else {
-    if (!board.pass(false)) {
-      auto action = agent.select(board);
-      board.update(action.x, action.y, false);
+  if (!board.finished) {
+    if (isPlayerTurn) {
+      isPlayerTurn = !board.pass(true) && !board.mouse();
+    } else {
+      if (!board.pass(false)) {
+        auto action = agent.select(board);
+        board.update(action.x, action.y, false);
+      }
+      isPlayerTurn = true;
     }
-    isPlayerTurn = true;
   }
   board.draw();
 
@@ -34,8 +36,10 @@ extern(C) void update() {
   w4.text("Score:", margin, 0);
   w4.text(itos(board.score).ptr, 64, 0);
 
-  w4.text(isPlayerTurn ? "Your turn (black)" : "CPU turn (white)",
-          margin, w4.screenSize - margin);
+  w4.text(
+      board.finished ? "FINISHED" :
+      isPlayerTurn ? "Your turn (black)" : "CPU turn (white)",
+      margin, w4.screenSize - margin);
 }
 
 const(char)[] itos(int i) {
