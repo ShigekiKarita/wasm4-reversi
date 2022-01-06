@@ -1,6 +1,7 @@
 *
 !*/
 !*.d
+!*.html
 !*.md
 !.gitignore
 !Makefile

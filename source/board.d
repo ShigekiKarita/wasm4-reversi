@@ -53,6 +53,38 @@ struct Board {
     }
   }
 
+  int score() const {
+    int ret;
+    foreach (x; 0 .. length) {
+      foreach (y; 0 .. length) {
+        final switch (states[x][y]) {
+          case State.empty:
+            break;
+          case State.black:
+            ++ret;
+            break;
+          case State.white:
+            --ret;
+            break;
+        }
+      }
+    }
+    return ret;
+  }
+
+  bool finished() {
+    return pass(true) && pass(false);
+  }
+
+  bool pass(bool black) {
+    foreach (x; 0 .. length) {
+      foreach (y; 0 .. length) {
+        if (canUpdate(x, y, black)) return false;
+      }
+    }
+    return true;
+  }
+
   bool mouse() {
     static ubyte prevState;
     const mouse = *w4.mouseButtons;
@@ -62,20 +94,20 @@ struct Board {
 
     auto x = (*w4.mouseX - xmin) / (width / length);
     auto y = (*w4.mouseY - ymin) / (height / length);
-    if (states[x][y] != State.empty) return false;
     if (!canUpdate(x, y, true)) return false;
-
-    states[x][y] = State.black;
     update(x, y, true);
     return true;
   }
 
+  // TODO(karita): fix me.
   bool canUpdate(int x, int y, bool black) {
     if (x < 0 || length <= x || y < 0 || length <= y) return false;
-    states[x][y] = State.black;
+    if (states[x][y] != State.empty) return false;
+
     auto tmp = states;
-    update(x, y, black);
-    auto ret = tmp != states;
+    tmp[x][y] = black ? State.black : State.white;
+    update(x, y, black);        
+    bool ret = states != tmp;
     states = tmp;
     states[x][y] = State.empty;
     return ret;
@@ -83,7 +115,7 @@ struct Board {
 
   void update(int x, int y, bool black) {
     auto color = black ? State.black : State.white;
-
+    states[x][y] = color;
     // horizontal
     foreach_reverse (yi; 0 .. y) {
       if (states[x][yi] == State.empty) break;
@@ -117,15 +149,15 @@ struct Board {
 
     }
 
-    // slash /
-    foreach (i; 1 .. min(y, length - x - 1) + 1) {
+    // slash
+    foreach (i; 1 .. min(x, length - y - 1) + 1) {
       if (states[x - i][y + i] == State.empty) break;
       if (states[x - i][y + i] == color) {
         foreach (j; 1 .. i + 1) states[x - j][y + j] = color;
         break;
       }
     }
-    foreach (i; 1 .. min(x, length - y - 1) + 1) {
+    foreach (i; 1 .. min(y, length - x - 1) + 1) {
       if (states[x + i][y - i] == State.empty) break;
       if (states[x + i][y - i] == color) {
         foreach (j; 1 .. i + 1) states[x + j][y - j] = color;
