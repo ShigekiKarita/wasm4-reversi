@@ -1,0 +1,10 @@
+*
+!*/
+!*.d
+!*.md
+!.gitignore
+!Makefile
+!dub.json
+
+/cart.wasm
+/.dub
